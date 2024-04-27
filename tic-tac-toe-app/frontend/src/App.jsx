@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import './App.css'; 
+import ScoreBoard from './components/ScoreBoard'; 
 import './bootstrap.min.css';
 
 function App() {
   // State to manage the tic-tac-toe board
   const [board, setBoard] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
+  const [playerXScore, setPlayerXScore] = useState(0); // State for Player X score
+  const [playerOScore, setPlayerOScore] = useState(0); // State for Player O score
 
   // Function to handle square clicks
   const handleClick = (index) => {
@@ -39,10 +42,22 @@ function App() {
     return null;
   };
 
+  // Function to update scores and reset the board
+  const updateScoresAndResetBoard = (winner) => {
+    if (winner === 'X') {
+      setPlayerXScore(playerXScore + 1);
+    } else if (winner === 'O') {
+      setPlayerOScore(playerOScore + 1);
+    }
+    setBoard(Array(9).fill(null));
+    setXIsNext(true);
+  };
+
   // Function to render the status message
   const renderStatus = () => {
     const winner = calculateWinner(board);
     if (winner) {
+      updateScoresAndResetBoard(winner);
       return `Winner: ${winner}`;
     } else {
       return `Next Player: ${xIsNext ? 'X' : 'O'}`;
@@ -61,6 +76,7 @@ function App() {
   return (
     <div className="app">
       <h1>Tic-Tac-Toe</h1>
+      <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} /> 
       <div className="board">{renderBoard()}</div>
       <div className="status">{renderStatus()}</div>
     </div>

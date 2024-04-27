@@ -63,6 +63,14 @@ function App() {
     setShowMainMenu(false);
   };
 
+  const handleMainMenu = () => {
+    setShowMainMenu(true);
+    setPlayer1Name('');
+    setPlayer2Name('');
+    setPlayerXScore(0);
+    setPlayerOScore(0);
+  };
+
   const renderMainMenu = () => {
     return (
       <div className="main-menu">
@@ -102,7 +110,7 @@ function App() {
   const renderStatus = () => {
     const winner = calculateWinner(board);
     if (winner) {
-      return winner === 'X' ? `${player1Name} wins!` : `${player2Name} wins!`;
+      return `Winner: ${winner}`;
     } else if (board.every(square => square !== null)) {
       return 'Draw';
     } else {
@@ -114,16 +122,14 @@ function App() {
     return (
       <div className="app">
         <h1>Tic-Tac-Toe</h1>
-        <ScoreBoard 
-          playerXScore={playerXScore} 
-          playerOScore={playerOScore} 
-          player1Name={player1Name}
-          player2Name={player2Name}
-        />
+        <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} player1Name={player1Name} player2Name={player2Name} />
         <div className="board">{renderBoard()}</div>
-        <div className="status">{renderStatus()}</div>
+        <div className="status">{renderStatus()}</div> 
         {(calculateWinner(board) || board.every(square => square !== null)) && (
-          <button onClick={resetGame}>Play Again</button>
+          <div className="game-over-buttons">
+            <button className="play-again-button" onClick={resetGame}>Play Again</button>
+            <button className="main-menu-button" onClick={handleMainMenu}>Main Menu</button>
+          </div>
         )}
       </div>
     );

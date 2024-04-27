@@ -1,0 +1,26 @@
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  width: 500px; 
+  margin: auto; 
+}
+
+.square {
+  width: 150px; 
+  height: 150px; 
+  margin: 5px;
+  background-color: #fff;
+  border: 5px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 100px;
+  cursor: pointer;
+  padding-top: 20px;
+}
+
+.status {
+  font-size: 36px;
+  text-align: center;
+  padding-top: 30px;
+}

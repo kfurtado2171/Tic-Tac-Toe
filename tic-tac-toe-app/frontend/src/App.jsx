@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import './App.css'; 
-import ScoreBoard from './components/ScoreBoard'; 
+import './App.css';
+import ScoreBoard from './components/ScoreBoard';
 import './bootstrap.min.css';
 
 function App() {
-  // State to manage the tic-tac-toe board
   const [board, setBoard] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
-  const [playerXScore, setPlayerXScore] = useState(0); // State for Player X score
-  const [playerOScore, setPlayerOScore] = useState(0); // State for Player O score
+  const [playerXScore, setPlayerXScore] = useState(0);
+  const [playerOScore, setPlayerOScore] = useState(0);
 
-  // Function to handle square clicks
   const handleClick = (index) => {
     const newBoard = [...board];
     if (calculateWinner(newBoard) || newBoard[index]) {
@@ -19,9 +17,12 @@ function App() {
     newBoard[index] = xIsNext ? 'X' : 'O';
     setBoard(newBoard);
     setXIsNext(!xIsNext);
+    const winner = calculateWinner(newBoard);
+    if (winner) {
+      updateScores(winner);
+    }
   };
 
-  // Function to calculate the winner
   const calculateWinner = (squares) => {
     const lines = [
       [0, 1, 2],
@@ -42,29 +43,30 @@ function App() {
     return null;
   };
 
-  // Function to update scores and reset the board
-  const updateScoresAndResetBoard = (winner) => {
+  const updateScores = (winner) => {
     if (winner === 'X') {
-      setPlayerXScore(playerXScore + 1);
+      setPlayerXScore(prevScore => prevScore + 1);
     } else if (winner === 'O') {
-      setPlayerOScore(playerOScore + 1);
+      setPlayerOScore(prevScore => prevScore + 1);
     }
+  };
+
+  const resetGame = () => {
     setBoard(Array(9).fill(null));
     setXIsNext(true);
   };
 
-  // Function to render the status message
   const renderStatus = () => {
     const winner = calculateWinner(board);
     if (winner) {
-      updateScoresAndResetBoard(winner);
       return `Winner: ${winner}`;
+    } else if (board.every(square => square !== null)) {
+      return 'Draw';
     } else {
       return `Next Player: ${xIsNext ? 'X' : 'O'}`;
     }
   };
 
-  // Function to render the game board
   const renderBoard = () => {
     return board.map((square, index) => (
       <button key={index} className="square" onClick={() => handleClick(index)}>
@@ -76,9 +78,12 @@ function App() {
   return (
     <div className="app">
       <h1>Tic-Tac-Toe</h1>
-      <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} /> 
+      <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore}/>
       <div className="board">{renderBoard()}</div>
       <div className="status">{renderStatus()}</div>
+      {(calculateWinner(board) || board.every(square => square !== null)) && (
+        <button onClick={resetGame}>Play Again</button>
+      )}
     </div>
   );
 }

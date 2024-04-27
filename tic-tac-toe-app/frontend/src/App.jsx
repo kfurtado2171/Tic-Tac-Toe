@@ -8,6 +8,9 @@ function App() {
   const [xIsNext, setXIsNext] = useState(true);
   const [playerXScore, setPlayerXScore] = useState(0);
   const [playerOScore, setPlayerOScore] = useState(0);
+  const [showMainMenu, setShowMainMenu] = useState(true);
+  const [player1Name, setPlayer1Name] = useState('');
+  const [player2Name, setPlayer2Name] = useState('');
 
   const handleClick = (index) => {
     const newBoard = [...board];
@@ -56,15 +59,36 @@ function App() {
     setXIsNext(true);
   };
 
-  const renderStatus = () => {
-    const winner = calculateWinner(board);
-    if (winner) {
-      return `Winner: ${winner}`;
-    } else if (board.every(square => square !== null)) {
-      return 'Draw';
-    } else {
-      return `Next Player: ${xIsNext ? 'X' : 'O'}`;
-    }
+  const handleStartGame = () => {
+    setShowMainMenu(false);
+  };
+
+  const renderMainMenu = () => {
+    return (
+      <div className="main-menu">
+        <h1 style={{ marginTop: '100px' }}>Welcome to Tic-Tac-Toe</h1>
+        <div>
+          <br />
+          <label>Player 1 Name:&nbsp;</label>
+          <input
+            type="text"
+            value={player1Name}
+            onChange={(e) => setPlayer1Name(e.target.value)}
+          />
+        </div>
+        <div>
+          <br />
+          <label>Player 2 Name:&nbsp;</label>
+          <input
+            type="text"
+            value={player2Name}
+            onChange={(e) => setPlayer2Name(e.target.value)}
+          />
+        </div>
+        <br />
+        <button onClick={handleStartGame}>Play</button>
+      </div>
+    );
   };
 
   const renderBoard = () => {
@@ -75,17 +99,37 @@ function App() {
     ));
   };
 
-  return (
-    <div className="app">
-      <h1>Tic-Tac-Toe</h1>
-      <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore}/>
-      <div className="board">{renderBoard()}</div>
-      <div className="status">{renderStatus()}</div>
-      {(calculateWinner(board) || board.every(square => square !== null)) && (
-        <button onClick={resetGame}>Play Again</button>
-      )}
-    </div>
-  );
+  const renderStatus = () => {
+    const winner = calculateWinner(board);
+    if (winner) {
+      return winner === 'X' ? `${player1Name} wins!` : `${player2Name} wins!`;
+    } else if (board.every(square => square !== null)) {
+      return 'Draw';
+    } else {
+      return `Next Player: ${xIsNext ? player1Name : player2Name}`;
+    }
+  };
+
+  const renderGame = () => {
+    return (
+      <div className="app">
+        <h1>Tic-Tac-Toe</h1>
+        <ScoreBoard 
+          playerXScore={playerXScore} 
+          playerOScore={playerOScore} 
+          player1Name={player1Name}
+          player2Name={player2Name}
+        />
+        <div className="board">{renderBoard()}</div>
+        <div className="status">{renderStatus()}</div>
+        {(calculateWinner(board) || board.every(square => square !== null)) && (
+          <button onClick={resetGame}>Play Again</button>
+        )}
+      </div>
+    );
+  };
+
+  return showMainMenu ? renderMainMenu() : renderGame();
 }
 
 export default App;

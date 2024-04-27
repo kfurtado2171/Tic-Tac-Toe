@@ -29,3 +29,14 @@
   font-size: 30px;
   text-align: center;
 }
+
+.main-menu {
+  text-align: center;
+  font-size: 36px;
+}
+.main-menu input[type="text"],
+.main-menu button {
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 36px;
+}

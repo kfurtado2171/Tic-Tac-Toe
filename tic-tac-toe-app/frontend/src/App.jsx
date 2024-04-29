@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import ScoreBoard from './components/ScoreBoard';
 import './bootstrap.min.css';
+import io from 'socket.io-client'; // Import socket.io-client
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -11,6 +12,19 @@ function App() {
   const [showMainMenu, setShowMainMenu] = useState(true);
   const [player1Name, setPlayer1Name] = useState('');
   const [player2Name, setPlayer2Name] = useState('');
+
+  useEffect(() => {
+    const socket = io('http://localhost:5173'); // Change the URL to match your server URL
+
+    // Example event listeners
+    socket.on('someEvent', (data) => {
+      console.log('Received data from server:', data);
+    });
+
+    return () => {
+      socket.disconnect(); // Clean up the socket connection when component unmounts
+    };
+  }, []);
 
   const handleClick = (index) => {
     const newBoard = [...board];
@@ -64,7 +78,6 @@ function App() {
     setBoard(Array(9).fill(null));
     setXIsNext(true);
   };
-  
 
   const handleMainMenu = () => {
     setShowMainMenu(true);

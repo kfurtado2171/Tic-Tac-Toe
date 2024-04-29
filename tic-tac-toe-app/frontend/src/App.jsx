@@ -14,19 +14,19 @@ function App() {
 
   const handleClick = (index) => {
     const newBoard = [...board];
-    if (calculateWinner(newBoard) || newBoard[index]) {
+    if (calculateWinner(newBoard, player1Name, player2Name) || newBoard[index]) {
       return;
     }
     newBoard[index] = xIsNext ? 'X' : 'O';
     setBoard(newBoard);
     setXIsNext(!xIsNext);
-    const winner = calculateWinner(newBoard);
+    const winner = calculateWinner(newBoard, player1Name, player2Name);
     if (winner) {
       updateScores(winner);
     }
   };
 
-  const calculateWinner = (squares) => {
+  const calculateWinner = (squares, player1Name, player2Name) => {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -40,16 +40,16 @@ function App() {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
+        return squares[a] === 'X' ? player1Name : player2Name;
       }
     }
     return null;
   };
 
   const updateScores = (winner) => {
-    if (winner === 'X') {
+    if (winner === player1Name) {
       setPlayerXScore(prevScore => prevScore + 1);
-    } else if (winner === 'O') {
+    } else if (winner === player2Name) {
       setPlayerOScore(prevScore => prevScore + 1);
     }
   };
@@ -61,7 +61,10 @@ function App() {
 
   const handleStartGame = () => {
     setShowMainMenu(false);
+    setBoard(Array(9).fill(null));
+    setXIsNext(true);
   };
+  
 
   const handleMainMenu = () => {
     setShowMainMenu(true);
@@ -108,7 +111,7 @@ function App() {
   };
 
   const renderStatus = () => {
-    const winner = calculateWinner(board);
+    const winner = calculateWinner(board, player1Name, player2Name);
     if (winner) {
       return `Winner: ${winner}`;
     } else if (board.every(square => square !== null)) {
@@ -125,7 +128,7 @@ function App() {
         <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} player1Name={player1Name} player2Name={player2Name} />
         <div className="board">{renderBoard()}</div>
         <div className="status">{renderStatus()}</div> 
-        {(calculateWinner(board) || board.every(square => square !== null)) && (
+        {(calculateWinner(board, player1Name, player2Name) || board.every(square => square !== null)) && (
           <div className="game-over-buttons">
             <button className="play-again-button" onClick={resetGame}>Play Again</button>
             <button className="main-menu-button" onClick={handleMainMenu}>Main Menu</button>

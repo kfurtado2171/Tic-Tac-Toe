@@ -60,11 +60,34 @@ function App() {
   };
 
   const handleStartGame = () => {
-    setShowMainMenu(false);
-    setBoard(Array(9).fill(null));
-    setXIsNext(true);
-  };
+    // Prepare the player data
+    const playerData = {
+      player1Name: player1Name,
+      player2Name: player2Name
+    };
   
+    // Make the POST request to save player data
+    fetch('http://localhost:5173/play', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(playerData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to save player data');
+      }
+      // If successful, hide the main menu
+      setShowMainMenu(false);
+      setBoard(Array(9).fill(null));
+      setXIsNext(true);
+    })
+    .catch(error => {
+      console.error('Error saving player data:', error);
+      // Handle error appropriately
+    });
+  };
 
   const handleMainMenu = () => {
     setShowMainMenu(true);

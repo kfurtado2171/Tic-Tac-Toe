@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import ScoreBoard from './components/ScoreBoard';
 import './bootstrap.min.css';
-import io from 'socket.io-client'; // Import socket.io-client
+import io from 'socket.io-client'; 
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -10,81 +10,76 @@ function App() {
   const [playerXScore, setPlayerXScore] = useState(0);
   const [playerOScore, setPlayerOScore] = useState(0);
   const [showMainMenu, setShowMainMenu] = useState(true);
-  const [player1Name, setPlayer1Name] = useState('');
-  const [player2Name, setPlayer2Name] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const [playersList, setPlayersList] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState('');
 
   useEffect(() => {
-    const socket = io('http://localhost:5173'); // Change the URL to match your server URL
-
-    // Example event listeners
-    socket.on('someEvent', (data) => {
-      console.log('Received data from server:', data);
+    const socket = io('http://localhost:5173');
+  
+    socket.on('connect', () => {
+      console.log('Connected to server');
     });
-
+  
+    socket.on('updatePlayersList', (players) => {
+      console.log('Received updated players list:', players);
+      setPlayersList(players);
+    });
+  
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+  
+    socket.on('error', (error) => {
+      console.error('Socket connection error:', error);
+      // Handle error gracefully, e.g., display error message to the user
+    });
+  
     return () => {
-      socket.disconnect(); // Clean up the socket connection when component unmounts
+      socket.disconnect();
     };
   }, []);
-
-  const handleClick = (index) => {
-    const newBoard = [...board];
-    if (calculateWinner(newBoard, player1Name, player2Name) || newBoard[index]) {
-      return;
-    }
-    newBoard[index] = xIsNext ? 'X' : 'O';
-    setBoard(newBoard);
-    setXIsNext(!xIsNext);
-    const winner = calculateWinner(newBoard, player1Name, player2Name);
-    if (winner) {
-      updateScores(winner);
-    }
+  
+  const renderGameLobby = () => {
+    return (
+      <div className="game-lobby">
+        <h1>Game Lobby</h1>
+        <h2>Active Players:</h2>
+        {playersList.length === 0 ? (
+          <p>No active players currently available.</p>
+        ) : (
+          <ul>
+            {playersList.map((player, index) => (
+              <li key={index} onClick={() => handlePlayerSelection(player)}>
+                {player}
+              </li>
+            ))}
+          </ul>
+        )}
+        <button onClick={() => setShowMainMenu(true)}>Back to Main Menu</button>
+      </div>
+    );
   };
-
-  const calculateWinner = (squares, player1Name, player2Name) => {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a] === 'X' ? player1Name : player2Name;
-      }
-    }
-    return null;
-  };
-
-  const updateScores = (winner) => {
-    if (winner === player1Name) {
-      setPlayerXScore(prevScore => prevScore + 1);
-    } else if (winner === player2Name) {
-      setPlayerOScore(prevScore => prevScore + 1);
-    }
-  };
-
-  const resetGame = () => {
-    setBoard(Array(9).fill(null));
-    setXIsNext(true);
-  };
+ 
 
   const handleStartGame = () => {
-    setShowMainMenu(false);
-    setBoard(Array(9).fill(null));
-    setXIsNext(true);
+    if (playerName.trim() !== '') { // Ensure playerName is not empty
+      const socket = io('http://localhost:5173'); // Connect to the server
+      socket.emit('joinGameLobby', playerName); // Emit an event with the playerName to the server
+      setShowMainMenu(false); // Hide the main menu
+    } else {
+      // Handle case where playerName is empty
+      alert('Please enter your name before entering the game lobby.');
+    }
+  };
+  
+
+  const handlePlayerNameChange = (e) => {
+    setPlayerName(e.target.value);
   };
 
-  const handleMainMenu = () => {
-    setShowMainMenu(true);
-    setPlayer1Name('');
-    setPlayer2Name('');
-    setPlayerXScore(0);
-    setPlayerOScore(0);
+  const handlePlayerSelection = (player) => {
+    setSelectedPlayer(player);
   };
 
   const renderMainMenu = () => {
@@ -93,65 +88,37 @@ function App() {
         <h1 style={{ marginTop: '100px' }}>Welcome to Tic-Tac-Toe</h1>
         <div>
           <br />
-          <label>Player 1 Name:&nbsp;</label>
+          <label>Enter Your Name:&nbsp;</label>
           <input
             type="text"
-            value={player1Name}
-            onChange={(e) => setPlayer1Name(e.target.value)}
-          />
-        </div>
-        <div>
-          <br />
-          <label>Player 2 Name:&nbsp;</label>
-          <input
-            type="text"
-            value={player2Name}
-            onChange={(e) => setPlayer2Name(e.target.value)}
+            value={playerName}
+            onChange={handlePlayerNameChange}
           />
         </div>
         <br />
-        <button onClick={handleStartGame}>Play</button>
+        <button onClick={handleStartGame}>Enter Game Lobby</button>
       </div>
     );
   };
 
-  const renderBoard = () => {
-    return board.map((square, index) => (
-      <button key={index} className="square" onClick={() => handleClick(index)}>
-        {square}
-      </button>
-    ));
-  };
+  // const renderGameLobby = () => {
+  //   return (
+  //     <div className="game-lobby">
+  //       <h1>Game Lobby</h1>
+  //       <h2>Active Players:</h2>
+  //       <ul>
+  //         {playersList.map((player, index) => (
+  //           <li key={index} onClick={() => handlePlayerSelection(player)}>
+  //             {player}
+  //           </li>
+  //         ))}
+  //       </ul>
+  //       <button onClick={() => setShowMainMenu(true)}>Back to Main Menu</button>
+  //     </div>
+  //   );
+  // };
 
-  const renderStatus = () => {
-    const winner = calculateWinner(board, player1Name, player2Name);
-    if (winner) {
-      return `Winner: ${winner}`;
-    } else if (board.every(square => square !== null)) {
-      return 'Draw';
-    } else {
-      return `Next Player: ${xIsNext ? player1Name : player2Name}`;
-    }
-  };
-
-  const renderGame = () => {
-    return (
-      <div className="app">
-        <h1>Tic-Tac-Toe</h1>
-        <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} player1Name={player1Name} player2Name={player2Name} />
-        <div className="board">{renderBoard()}</div>
-        <div className="status">{renderStatus()}</div> 
-        {(calculateWinner(board, player1Name, player2Name) || board.every(square => square !== null)) && (
-          <div className="game-over-buttons">
-            <button className="play-again-button" onClick={resetGame}>Play Again</button>
-            <button className="main-menu-button" onClick={handleMainMenu}>Main Menu</button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  return showMainMenu ? renderMainMenu() : renderGame();
+  return showMainMenu ? renderMainMenu() : renderGameLobby();
 }
 
 export default App;

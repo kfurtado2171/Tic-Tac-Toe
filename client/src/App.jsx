@@ -9,23 +9,24 @@ function App() {
   const [playerXScore, setPlayerXScore] = useState(0);
   const [playerOScore, setPlayerOScore] = useState(0);
   const [showMainMenu, setShowMainMenu] = useState(true);
-  const [playerName, setPlayerName] = useState('');
+  const [player1Name, setPlayer1Name] = useState('');
+  const [player2Name, setPlayer2Name] = useState('');
 
   const handleClick = (index) => {
     const newBoard = [...board];
-    if (calculateWinner(newBoard, playerName) || newBoard[index]) {
+    if (calculateWinner(newBoard, player1Name, player2Name) || newBoard[index]) {
       return;
     }
     newBoard[index] = xIsNext ? 'X' : 'O';
     setBoard(newBoard);
     setXIsNext(!xIsNext);
-    const winner = calculateWinner(newBoard, playerName);
+    const winner = calculateWinner(newBoard, player1Name, player2Name);
     if (winner) {
       updateScores(winner);
     }
   };
 
-  const calculateWinner = (squares, playerName) => {
+  const calculateWinner = (squares, player1Name, player2Name) => {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -39,16 +40,16 @@ function App() {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a] === 'X' ? playerName : 'Opponent';
+        return squares[a] === 'X' ? player1Name : player2Name;
       }
     }
     return null;
   };
 
   const updateScores = (winner) => {
-    if (winner === playerName) {
+    if (winner === player1Name) {
       setPlayerXScore(prevScore => prevScore + 1);
-    } else if (winner === 'Opponent') {
+    } else if (winner === player2Name) {
       setPlayerOScore(prevScore => prevScore + 1);
     }
   };
@@ -58,41 +59,41 @@ function App() {
     setXIsNext(true);
   };
 
-  const handleSubmit = async () => {
+  const handleStartGame = async () => {
+    await Promise.all([
+      handleSubmit(player1Name),
+      handleSubmit(player2Name)
+    ]);
+    
+    setShowMainMenu(false);
+    setBoard(Array(9).fill(null));
+    setXIsNext(true);
+  };  
+
+  const handleSubmit = async (name) => {
     try {
       const response = await fetch('http://localhost:5050/api/players', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name: playerName })
+        body: JSON.stringify({ name })
       });
       if (response.ok) {
         const data = await response.json();
-        console.log('Player created successfully:', data);
-        // Handle success, e.g., show a success message
+        console.log(`Player ${name} created successfully:`, data);
       } else {
-        console.error('Failed to create player');
-        // Handle error, e.g., show an error message
+        console.error(`Failed to create player ${name}`);
       }
     } catch (error) {
-      console.error('Failed to create player:', error);
-      // Handle error, e.g., show an error message
+      console.error(`Failed to create player ${name}:`, error);
     }
   };
-  
-  const handleStartGame = async () => {
-    // Save player's name to the database before starting the game
-    await handleSubmit();
-    setShowMainMenu(false);
-    setBoard(Array(9).fill(null));
-    setXIsNext(true);
-  };
-  
 
   const handleMainMenu = () => {
     setShowMainMenu(true);
-    setPlayerName('');
+    setPlayer1Name('');
+    setPlayer2Name('');
     setPlayerXScore(0);
     setPlayerOScore(0);
   };
@@ -103,11 +104,20 @@ function App() {
         <h1 style={{ marginTop: '100px' }}>Welcome to Tic-Tac-Toe</h1>
         <div>
           <br />
-          <label>Player Name:&nbsp;</label>
+          <label>Player 1 Name:&nbsp;</label>
           <input
             type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
+            value={player1Name}
+            onChange={(e) => setPlayer1Name(e.target.value)}
+          />
+        </div>
+        <div>
+          <br />
+          <label>Player 2 Name:&nbsp;</label>
+          <input
+            type="text"
+            value={player2Name}
+            onChange={(e) => setPlayer2Name(e.target.value)}
           />
         </div>
         <br />
@@ -125,13 +135,13 @@ function App() {
   };
 
   const renderStatus = () => {
-    const winner = calculateWinner(board, playerName);
+    const winner = calculateWinner(board, player1Name, player2Name);
     if (winner) {
       return `Winner: ${winner}`;
     } else if (board.every(square => square !== null)) {
       return 'Draw';
     } else {
-      return `Next Player: ${playerName}`;
+      return `Next Player: ${xIsNext ? player1Name : player2Name}`;
     }
   };
 
@@ -139,10 +149,10 @@ function App() {
     return (
       <div className="app">
         <h1>Tic-Tac-Toe</h1>
-        <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} playerName={playerName} />
+        <ScoreBoard playerXScore={playerXScore} playerOScore={playerOScore} player1Name={player1Name} player2Name={player2Name} />
         <div className="board">{renderBoard()}</div>
         <div className="status">{renderStatus()}</div> 
-        {(calculateWinner(board, playerName) || board.every(square => square !== null)) && (
+        {(calculateWinner(board, player1Name, player2Name) || board.every(square => square !== null)) && (
           <div className="game-over-buttons">
             <button className="play-again-button" onClick={resetGame}>Play Again</button>
             <button className="main-menu-button" onClick={handleMainMenu}>Main Menu</button>

@@ -23,6 +23,7 @@ function App() {
     const winner = calculateWinner(newBoard, player1Name, player2Name);
     if (winner) {
       updateScores(winner);
+      updatePlayerRecord(winner);
     }
   };
 
@@ -51,6 +52,24 @@ function App() {
       setPlayerXScore(prevScore => prevScore + 1);
     } else if (winner === player2Name) {
       setPlayerOScore(prevScore => prevScore + 1);
+    }
+  };
+
+  const updatePlayerRecord = async (winner) => {
+    try {
+      const response = await fetch(`http://localhost:5050/api/players/${winner}/wins`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        console.log(`Player ${winner} record updated successfully.`);
+      } else {
+        console.error('Failed to update player record');
+      }
+    } catch (error) {
+      console.error('Failed to update player record:', error);
     }
   };
 

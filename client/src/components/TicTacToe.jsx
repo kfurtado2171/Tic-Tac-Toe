@@ -1,5 +1,7 @@
+// Import the CSS file for styling
 import './TicTacToe.css';
 
+// Define a functional component called TicTacToe
 function TicTacToe() {
   // State to manage the tic-tac-toe board
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -46,15 +48,17 @@ function TicTacToe() {
     ));
   };
 
+  // Render the TicTacToe component
   return (
-    <div className="tic-tac-toe">
-      <h1>Tic-Tac-Toe</h1>
-      <div className="board">{renderBoard()}</div>
-      <div className="status">
+    <div className="tic-tac-toe"> {/* Tic-tac-toe container */}
+      <h1>Tic-Tac-Toe</h1> {/* Game title */}
+      <div className="board">{renderBoard()}</div> {/* Render the game board */}
+      <div className="status"> {/* Display game status */}
         {calculateWinner(board) ? `Winner: ${calculateWinner(board)}` : `Next Player: ${xIsNext ? 'X' : 'O'}`}
       </div>
     </div>
   );
 }
 
+// Export the TicTacToe component as default
 export default TicTacToe;

@@ -6,16 +6,16 @@ const http = require('http');
 const socketIo = require('socket.io');
 
 const playerRoutes = require('./routes/Player');
+const leaderboardRoutes = require('./routes/Leaderboard');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 const port = process.env.PORT || 5050;
-// this should always be in .env
 
-//const uri = "mongodb+srv://kfurtado14:0nuwp6YEh2pCKZcS@todo.n49mnlt.mongodb.net/?retryWrites=true&w=majority&appName=Todo"
 const uri = "mongodb+srv://kfurtado14:zIOQyNZQ5GQKofCu@players.gvpdlpn.mongodb.net/?retryWrites=true&w=majority&appName=Players"
+
 // Connect to MongoDB using environment variable
 mongoose.set('strictQuery', false)
 
@@ -31,6 +31,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/api/players', playerRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // Socket.io connection
 io.on('connection', (socket) => {

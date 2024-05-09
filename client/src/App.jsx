@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import ScoreBoard from './components/ScoreBoard';
 import './bootstrap.min.css';
@@ -11,6 +11,25 @@ function App() {
   const [showMainMenu, setShowMainMenu] = useState(true);
   const [player1Name, setPlayer1Name] = useState('');
   const [player2Name, setPlayer2Name] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch('http://localhost:5050/api/leaderboard');
+        if (response.ok) {
+          const data = await response.json();
+          setLeaderboard(data);
+        } else {
+          console.error('Failed to fetch leaderboard');
+        }
+      } catch (error) {
+        console.error('Failed to fetch leaderboard:', error);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
 
   const handleClick = (index) => {
     const newBoard = [...board];
@@ -109,15 +128,38 @@ function App() {
     }
   };
 
-  const handleMainMenu = () => {
+  const handleMainMenu = async () => {
     setShowMainMenu(true);
     setPlayer1Name('');
     setPlayer2Name('');
     setPlayerXScore(0);
     setPlayerOScore(0);
+    
+    try {
+      const response = await fetch('http://localhost:5050/api/leaderboard');
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data);
+      } else {
+        console.error('Failed to fetch updated leaderboard');
+      }
+    } catch (error) {
+      console.error('Failed to fetch updated leaderboard:', error);
+    }
   };
 
   const renderMainMenu = () => {
+    const renderLeaderboard = () => (
+      <div>
+        <h2 style={{ fontSize: '75px', marginTop: '50px' }}>Leaderboard</h2>
+        <ul>
+          {leaderboard.map((player, index) => (
+            <li key={index}>{player.name} - Wins: {player.wins}</li>
+          ))}
+        </ul>
+      </div>
+    );
+
     return (
       <div className="main-menu">
         <h1 style={{ marginTop: '100px' }}>Welcome to Tic-Tac-Toe</h1>
@@ -141,6 +183,7 @@ function App() {
         </div>
         <br />
         <button onClick={handleStartGame}>Play</button>
+        {renderLeaderboard()}
       </div>
     );
   };
